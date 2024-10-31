@@ -18,6 +18,8 @@ public interface UserService extends UserDetailsService{
 	//Update user service
 	UserDto updateUser(String userId,UserDto userDto);
 	void deleteUser(String userId);
+	
+	//Get All Service
 	List<UserDto> getUsers(int page, int limit, String userType) throws AddressException, MessagingException, IOException;
 	UserDto updateUserStatus(String id, UserDto userDto);
 	String checkEmail(String email);

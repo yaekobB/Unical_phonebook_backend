@@ -224,6 +224,7 @@ public class UserServiceImpl implements UserService {
 		userRepository.delete(userEntity);
 	}
 
+	//Get All Users
 	@Override
 	public List<UserDto> getUsers(int page, int limit, String userType) throws IOException{
 		 

@@ -54,6 +54,7 @@ public class UserControllers {
 		
 	}
 	
+	//Get All Api
 	@GetMapping
 	public List<UserRest> getUsers(@RequestParam(value="userType", defaultValue = "All") String userType, 
 			@RequestParam(value="page", defaultValue = "1") int page,	   
