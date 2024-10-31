@@ -104,6 +104,7 @@ public class UserControllers {
 		return returnValue;
 	}
 	
+	//Delete
 	@DeleteMapping(path="/{id}")
 	public OperationStatusModel deleteUser(@PathVariable String id) {
 		

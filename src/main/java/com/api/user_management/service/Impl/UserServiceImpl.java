@@ -214,6 +214,7 @@ public class UserServiceImpl implements UserService {
 		return returnValue;
 	}
 	
+	//Delete User
 	@Override
 	public void deleteUser(String userId) {
 		UserEntity userEntity = userRepository.findByUserId(userId);
