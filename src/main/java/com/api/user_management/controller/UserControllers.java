@@ -75,6 +75,8 @@ public class UserControllers {
 		return returnValue;
 	}
 
+	
+	//Update user api
 	@PutMapping(path="/{id}")
 	public UserRest updateUser(@PathVariable String id, @RequestBody UserDetailRequestModel userDetails) {
 		

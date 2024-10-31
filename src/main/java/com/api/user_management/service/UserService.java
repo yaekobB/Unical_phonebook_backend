@@ -14,6 +14,8 @@ public interface UserService extends UserDetailsService{
 	UserDto createUser(UserDto user) throws AddressException, MessagingException, IOException;
 	UserDto getuser(String email);
 	UserDto getUserByUserId(String userId);
+	
+	//Update user service
 	UserDto updateUser(String userId,UserDto userDto);
 	void deleteUser(String userId);
 	List<UserDto> getUsers(int page, int limit, String userType) throws AddressException, MessagingException, IOException;
