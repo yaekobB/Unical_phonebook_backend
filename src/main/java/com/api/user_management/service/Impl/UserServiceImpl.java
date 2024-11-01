@@ -112,6 +112,7 @@ public class UserServiceImpl implements UserService {
 		
 	}
 
+	//Sign in
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		UserEntity userEntity = userRepository.findByEmail(email);
