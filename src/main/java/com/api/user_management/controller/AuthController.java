@@ -47,6 +47,7 @@ public class AuthController {
     @Autowired
 	UserService userService;
 
+    //Sign in
     @PostMapping("/login")	
     public JwtAuthenticationResponse authenticateUser(@Valid @RequestBody LoginRequestModel loginRequest) {
 
