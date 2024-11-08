@@ -48,7 +48,19 @@ public class UserEntity extends Audit implements Serializable  {
 	@Column(nullable = true,length=50)
 	private String websiteLink;
 	
-	@Column(nullable = false,length=120, unique=true)
+	@Column(nullable = true,length=50)
+	private String address;
+	
+	@Column(nullable = true,length=50)
+	private String linkedIn;
+	
+	@Column(nullable = true,length=50)
+	private String twitter;
+	
+	@Column(nullable = true,length=50)
+	private String departmentWebsite;
+	
+	@Column(nullable = false, unique=true)
 	private String email;
 	
 	@Column(nullable = false)
@@ -65,7 +77,48 @@ public class UserEntity extends Audit implements Serializable  {
 	@Column(nullable = false)
 	private String userStatus;
 	
+	@Column()
+	private Integer verificationCode;
 	
+	@Column(nullable = false)
+	private boolean isUserVerified=false;
+	
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getLinkedIn() {
+		return linkedIn;
+	}
+	public void setLinkedIn(String linkedIn) {
+		this.linkedIn = linkedIn;
+	}
+	public String getTwitter() {
+		return twitter;
+	}
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
+	}
+	public String getDepartmentWebsite() {
+		return departmentWebsite;
+	}
+	public void setDepartmentWebsite(String departmentWebsite) {
+		this.departmentWebsite = departmentWebsite;
+	}
+	public Integer getVerificationCode() {
+		return verificationCode;
+	}
+	public void setVerificationCode(Integer verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+	public boolean isUserVerified() {
+		return isUserVerified;
+	}
+	public void setUserVerified(boolean isUserVerified) {
+		this.isUserVerified = isUserVerified;
+	}
 	public UserEntity() {
 		super();
 	}
