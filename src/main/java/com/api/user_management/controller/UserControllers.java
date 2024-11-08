@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.api.user_management.security.AuthorizeRequest;
 import com.api.user_management.service.UserService;
 import com.api.user_management.shared.dto.UserDto;
+import com.api.user_management.ui.model.request.EmailVerificationRequestModel;
 import com.api.user_management.ui.model.request.UserDetailRequestModel;
 import com.api.user_management.ui.model.response.OperationStatusModel;
 import com.api.user_management.ui.model.response.RequestOperationName;
@@ -54,17 +55,24 @@ public class UserControllers {
 		
 	}
 	
-	//Get All Api
+	//Get All Api mmmmmmmmmmmmm
+	
+	
 	@GetMapping
 	public List<UserRest> getUsers(@RequestParam(value="userType", defaultValue = "All") String userType, 
 			@RequestParam(value="page", defaultValue = "1") int page,	   
-			@RequestParam(value="limit", defaultValue = "25") int limit) 
-					throws AddressException, MessagingException, IOException{
+			@RequestParam(value="limit", defaultValue = "25") int limit,
+			@RequestParam(value="searchKey", defaultValue = "") String searchKey,
+			@RequestParam(value="isPublic", defaultValue = "false") boolean isPublic,
+			@RequestParam(value="department", defaultValue = "") String department,
+			@RequestParam(value="role", defaultValue = "") String role
+			) 
+					throws AddressException, IOException{
 		
 //		authObject.authorization();
 		List<UserRest> returnValue = new ArrayList<>();
 		
-		List<UserDto> users= userService.getUsers(page,limit,userType);
+		List<UserDto> users= userService.getUsers(page,limit,userType, searchKey,isPublic, department, role);
 		
 		for(UserDto userDto : users) {
 			UserRest userModel = new UserRest();
@@ -119,4 +127,19 @@ public class UserControllers {
 	}
 	
 	
+	//verify
+	@PutMapping(path = "/verify")
+	public String verifyEmail(@RequestBody EmailVerificationRequestModel requestModel) {
+		
+		String returnValue = userService.verifyEmail(requestModel);
+		return returnValue;
+	}
+	
+	@PutMapping(path = "/resend-code")
+	public String resendCode(@RequestBody EmailVerificationRequestModel requestModel) {
+		
+		String returnValue = userService.resendCode(requestModel);
+		
+		return returnValue;
+	}
 }
