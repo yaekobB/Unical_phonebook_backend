@@ -5,11 +5,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 
 @SpringBootTest
-@Configuration
-class UnicalPhonebookApplicationTests {
+//@Configuration
+public class UnicalPhonebookApplicationTests {
 
-//	@Test
-//	void contextLoads() {
-//	}
+	@Test
+	public void contextLoads() {
+	}
 
 }

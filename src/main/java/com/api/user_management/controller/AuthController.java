@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.api.exception.AppException;
 import com.api.user_management.security.JwtTokenProvider;
 import com.api.user_management.service.UserService;
 import com.api.user_management.shared.dto.UserDto;

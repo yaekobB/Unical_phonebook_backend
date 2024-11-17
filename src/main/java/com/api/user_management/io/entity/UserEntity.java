@@ -45,19 +45,19 @@ public class UserEntity extends Audit implements Serializable  {
 	@Column(nullable = false,length=50)
 	private String phoneNumber;
 	
-	@Column(nullable = true,length=50)
+	@Column(nullable = true)
 	private String websiteLink;
 	
-	@Column(nullable = true,length=50)
+	@Column(nullable = true)
 	private String address;
 	
-	@Column(nullable = true,length=50)
+	@Column(nullable = true)
 	private String linkedIn;
 	
-	@Column(nullable = true,length=50)
+	@Column(nullable = true)
 	private String twitter;
 	
-	@Column(nullable = true,length=50)
+	@Column(nullable = true)
 	private String departmentWebsite;
 	
 	@Column(nullable = false, unique=true)
