@@ -14,7 +14,35 @@ public class UserDetailRequestModel {
 	private String websiteLink;
 	private Integer departmentId;
 	private String department;
+	private String address;
+	private String linkedIn;
+	private String twitter;
+	private String departmentWebsite;
 
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getLinkedIn() {
+		return linkedIn;
+	}
+	public void setLinkedIn(String linkedIn) {
+		this.linkedIn = linkedIn;
+	}
+	public String getTwitter() {
+		return twitter;
+	}
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
+	}
+	public String getDepartmentWebsite() {
+		return departmentWebsite;
+	}
+	public void setDepartmentWebsite(String departmentWebsite) {
+		this.departmentWebsite = departmentWebsite;
+	}
 	public String getDepartment() {
 		return department;
 	}

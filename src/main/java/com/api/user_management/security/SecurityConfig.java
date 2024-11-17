@@ -124,9 +124,18 @@ Object object=SecurityContextHolder.getContext().getAuthentication();
     		    .authorizeRequests()
     		        .antMatchers("/","/favicon.ico","//*.png","//*.gif","//*.svg", "//*.jpg","//*.html", "//*.css", "//*.js", "/download/")
     		            .permitAll()
-    		        .antMatchers(HttpMethod.POST, "/user/login","/user/signup","/account/resetpassword"
+    		        .antMatchers(HttpMethod.POST, "/user/login","/account/resetpassword","/user/signup","/user"
     		            )
-    		          .permitAll();
+    		          .permitAll()
+    		          .antMatchers(HttpMethod.PUT, "/user"
+    	    		            )
+    	    		          .permitAll()
+    	    		          .antMatchers(HttpMethod.PUT, "/user/*"
+    	    	    		            )
+    	    	    		          .permitAll()
+    		        .antMatchers(HttpMethod.GET, "/user"
+        		            )
+        		          .permitAll();
     		      
     		        http.authorizeRequests()
     		        .antMatchers(

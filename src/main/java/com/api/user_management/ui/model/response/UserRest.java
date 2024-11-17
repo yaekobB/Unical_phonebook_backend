@@ -12,8 +12,51 @@ public class UserRest {
 	private String userType;
 	private String userStatus;
 	private String department;
+	private String websiteLink;
+	private String address;
+	private String linkedIn;
+	private String twitter;
+	private String departmentWebsite;
+	private long totalUsers;
+	
+    public long getTotalUsers() {
+		return totalUsers;
+	}
+	public void setTotalUsers(long totalUsers) {
+		this.totalUsers = totalUsers;
+	}
 	private DepartmentResponseModel departmentResponseModel;
 	
+	public String getWebsiteLink() {
+		return websiteLink;
+	}
+	public void setWebsiteLink(String websiteLink) {
+		this.websiteLink = websiteLink;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getLinkedIn() {
+		return linkedIn;
+	}
+	public void setLinkedIn(String linkedIn) {
+		this.linkedIn = linkedIn;
+	}
+	public String getTwitter() {
+		return twitter;
+	}
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
+	}
+	public String getDepartmentWebsite() {
+		return departmentWebsite;
+	}
+	public void setDepartmentWebsite(String departmentWebsite) {
+		this.departmentWebsite = departmentWebsite;
+	}
 	public String getDepartment() {
 		return department;
 	}

@@ -1,5 +1,6 @@
 package com.api.user_management.controller;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.exception.AppException;
 import com.api.user_management.security.JwtTokenProvider;
 import com.api.user_management.service.UserService;
 import com.api.user_management.shared.dto.UserDto;
@@ -47,7 +49,6 @@ public class AuthController {
     @Autowired
 	UserService userService;
 
-    //Sign in
     @PostMapping("/login")	
     public JwtAuthenticationResponse authenticateUser(@Valid @RequestBody LoginRequestModel loginRequest) {
 
@@ -64,11 +65,16 @@ public class AuthController {
         return returnValue;
     }
 
+
+
+
+    @Valid
     @PostMapping(path="/signup")
 	public UserRest createUser(@RequestBody UserDetailRequestModel userDetails) throws AddressException, MessagingException, IOException {
 		
 		UserRest returnValue= new UserRest();
 		UserDto userDto = new UserDto();
+		
 		BeanUtils.copyProperties(userDetails, userDto);
 		
 		UserDto createdUser = userService.createUser(userDto);

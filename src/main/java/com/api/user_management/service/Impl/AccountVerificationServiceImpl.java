@@ -64,7 +64,7 @@ public class AccountVerificationServiceImpl implements AccountVerificationServic
 		sendMail.setToAddress(email);
 		sendMail.setSubject(mailSubject);
 		sendMail.setBody(mailBody);
-		String emailStatus = sendMailComponent.sendMail(sendMail);
+//		String emailStatus = sendMailComponent.sendMail(sendMail);
 		//String returnValue = sendMailcomponent.sendMail(email);
 		return "Password Reset Code sent";
 	}
@@ -90,9 +90,9 @@ public class AccountVerificationServiceImpl implements AccountVerificationServic
 		sendMail.setToAddress(email);
 		sendMail.setSubject(mailSubject);
 		sendMail.setBody(mailBody);
-		String returnValue = sendMailComponent.sendMail(sendMail);
+//		String returnValue = sendMailComponent.sendMail(sendMail);
 		
-		return returnValue;
+		return "";
 	}
 
 	

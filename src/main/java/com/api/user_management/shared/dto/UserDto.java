@@ -1,5 +1,7 @@
 package com.api.user_management.shared.dto;
-
+import javax.persistence.Column;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,6 +15,12 @@ public class UserDto implements Serializable{
 	private String firstName;
 	private String lastName;
 	private String middleName;
+
+	@NotBlank(message = "Email is mandatory")
+    @Pattern(
+        regexp = "^[\\w._%+-]+@[\\w.-]+\\.unicali\\.it$",
+        message = "Email must be in the format 'string@string.unicali.it'"
+    )
 	private String email;
 	private String password;
 	private String phoneNumber;
@@ -26,10 +34,45 @@ public class UserDto implements Serializable{
 	private Date registrationDate;
 	private int totalPages;
 	private String websiteLink;
+	private String address;
+	private String linkedIn;
+	private String twitter;
+	private String departmentWebsite;
 	private Integer departmentId;
+	private long totalUsers;
+	
+    public long getTotalUsers() {
+		return totalUsers;
+	}
+	public void setTotalUsers(long totalUsers) {
+		this.totalUsers = totalUsers;
+	}
 	private DepartmentResponseModel departmentResponseModel;
 	
-
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getLinkedIn() {
+		return linkedIn;
+	}
+	public void setLinkedIn(String linkedIn) {
+		this.linkedIn = linkedIn;
+	}
+	public String getTwitter() {
+		return twitter;
+	}
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
+	}
+	public String getDepartmentWebsite() {
+		return departmentWebsite;
+	}
+	public void setDepartmentWebsite(String departmentWebsite) {
+		this.departmentWebsite = departmentWebsite;
+	}
 	public UserDto() {
 		super();
 	}

@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -19,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
+@Configuration
 @EntityScan(basePackageClasses = {
 		UnicalPhonebook.class,
 		Jsr310JpaConverters.class
@@ -64,5 +66,6 @@ public class UnicalPhonebook implements ApplicationListener<ApplicationReadyEven
 	}
 
 	
+
 	
 }

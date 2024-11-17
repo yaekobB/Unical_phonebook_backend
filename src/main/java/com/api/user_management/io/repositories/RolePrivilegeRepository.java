@@ -3,9 +3,11 @@ package com.api.user_management.io.repositories;
 import java.util.List;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 import com.api.user_management.io.entity.RolePrivilegeEntity;
 
+@Repository
 public interface RolePrivilegeRepository extends PagingAndSortingRepository<RolePrivilegeEntity, Long>{
 
 
