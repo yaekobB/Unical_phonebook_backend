@@ -119,6 +119,9 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public MessageResponseModel getMessage(Long messageId) {
 
+		
+		
+		
 		MessageResponseModel returnValue = new MessageResponseModel();
 		MessageEntity messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
 		if (messageEntity == null)
