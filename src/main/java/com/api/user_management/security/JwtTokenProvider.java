@@ -9,15 +9,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import com.api.user_management.io.entity.UserEntity;
 import com.api.user_management.io.repositories.PrivilegeRepository;
 import com.api.user_management.io.repositories.RolePrivilegeRepository;
 import com.api.user_management.io.repositories.RoleRepository;
+import com.api.user_management.io.repositories.UserRepository;
 import com.api.user_management.io.repositories.UserRolesRepository;
 import com.api.user_management.ui.model.response.JwtAuthenticationResponse;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class JwtTokenProvider {
@@ -44,6 +47,9 @@ public class JwtTokenProvider {
     
     @Autowired
     UserRolesRepository userRolesRepository;
+    
+    @Autowired
+    UserRepository userRepository;
     	
     public JwtAuthenticationResponse generateToken(Authentication authentication) {
     	
@@ -64,7 +70,14 @@ public class JwtTokenProvider {
         returnValue.setUserId(userPrincipal.getUsername());
         returnValue.setUserType(userPrincipal.getUserType());
         returnValue.setUserStatus(userPrincipal.getUserStatus());
-     
+        
+        Optional<UserEntity> userEntity = userRepository.findById(userPrincipal.getId());
+        returnValue.setFirstName(userEntity.get().getFirstName());
+        returnValue.setMiddleName(userEntity.get().getMiddleName());
+        returnValue.setLastName(userEntity.get().getLastName());
+        returnValue.setEmail(userEntity.get().getEmail());
+        returnValue.setPhoneNumber(userEntity.get().getPhoneNumber());
+        returnValue.setDepartment(userEntity.get().getDepartment());
 //        List<RoleResponseForLogin> roleResponses = new ArrayList<>();
 //        
 //        List<UserRolesEntity> userRolesEntities = userRolesRepository.findByUserId(userPrincipal.getId());

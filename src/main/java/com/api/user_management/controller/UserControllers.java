@@ -77,6 +77,9 @@ public class UserControllers {
 		for(UserDto userDto : users) {
 			UserRest userModel = new UserRest();
 			BeanUtils.copyProperties(userDto, userModel);
+			userModel.setPrivacyDisabled(userDto.getIsPrivacyDisabled());
+			System.out.print("==========================="+userModel.getIsPrivacyDisabled()+"=========================");
+
 			returnValue.add(userModel);
 			
 		}
@@ -108,6 +111,19 @@ public class UserControllers {
 		
 		UserDto createdUser = userService.updateUserStatus(id, userDto);
 		BeanUtils.copyProperties(createdUser, returnValue);
+		 
+		return returnValue;
+	}
+	
+	@PutMapping(path="changeprivacy/{id}")
+	public UserRest updateUserPrivacy(@PathVariable String id, @RequestBody UserDetailRequestModel userDetails) {
+		UserRest returnValue= new UserRest();
+		UserDto userDto = new UserDto();
+		BeanUtils.copyProperties(userDetails, userDto);
+		userDto.setPrivacyDisabled(userDetails.getIsPrivacyDisabled());
+
+		UserDto changePrivacy = userService.updateUserPrivacy(id, userDto);
+		BeanUtils.copyProperties(changePrivacy, returnValue);
 		 
 		return returnValue;
 	}

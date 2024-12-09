@@ -20,6 +20,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.api.model.audit.Audit;
+import com.api.user_management.shared.MessageStatus;
 
 @Entity(name="users")
 public class UserEntity extends Audit implements Serializable  {
@@ -36,6 +37,9 @@ public class UserEntity extends Audit implements Serializable  {
 	@Column(nullable = false,length=50)
 	private String firstName;
 	
+	@Column
+	private MessageStatus status;
+
 	@Column(nullable = false,length=50)
 	private String lastName;
 	
@@ -83,6 +87,14 @@ public class UserEntity extends Audit implements Serializable  {
 	@Column(nullable = false)
 	private boolean isUserVerified=false;
 	
+	
+	
+	public MessageStatus getStatus() {
+		return status;
+	}
+	public void setStatus(MessageStatus status) {
+		this.status = status;
+	}
 	public String getAddress() {
 		return address;
 	}

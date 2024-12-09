@@ -124,6 +124,7 @@ Object object=SecurityContextHolder.getContext().getAuthentication();
     		    .authorizeRequests()
     		        .antMatchers("/","/favicon.ico","//*.png","//*.gif","//*.svg", "//*.jpg","//*.html", "//*.css", "//*.js", "/download/")
     		            .permitAll()
+    	                .antMatchers("/ws/**").permitAll()  // Allow unauthenticated access to /ws
     		        .antMatchers(HttpMethod.POST, "/user/login","/account/resetpassword","/user/signup","/user"
     		            )
     		          .permitAll()
