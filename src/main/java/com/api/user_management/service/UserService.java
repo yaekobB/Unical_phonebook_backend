@@ -34,5 +34,6 @@ public interface UserService {
 	List<UserDto> getUsers(int page, int limit, String userType, String searchKey, boolean isPublic, String department, String role) throws IOException;
 	String verifyEmail(EmailVerificationRequestModel requestModel);
 	String resendCode(EmailVerificationRequestModel requestModel);
+	UserDto updateUserPrivacy(String id, UserDto userDto);
 
 }
