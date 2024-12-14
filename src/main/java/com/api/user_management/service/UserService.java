@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.api.user_management.shared.dto.UserDto;
 import com.api.user_management.ui.model.request.EmailVerificationRequestModel;
 import com.api.user_management.ui.model.request.ResetPasswordRequestModel;
+import com.api.user_management.ui.model.request.UserDetailRequestModel;
+import com.api.user_management.ui.model.response.UserRest;
 
 public interface UserService {
 
@@ -31,9 +33,12 @@ public interface UserService {
 	String resetPassword(ResetPasswordRequestModel resetPasswordDetail);
 	String changeAccountPassword(ResetPasswordRequestModel changePassRequest);
 	UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
-	List<UserDto> getUsers(int page, int limit, String userType, String searchKey, boolean isPublic, String department, String role) throws IOException;
+	List<UserDto> getUsers(int page, int limit, String userType, String searchKey, boolean isPublic, 
+			Integer departmentId, Long roleId) throws IOException;
 	String verifyEmail(EmailVerificationRequestModel requestModel);
 	String resendCode(EmailVerificationRequestModel requestModel);
 	UserDto updateUserPrivacy(String id, UserDto userDto);
+	UserRest sendResetCode(EmailVerificationRequestModel requestModel);
+	UserRest forgotPassword(UserDetailRequestModel userDetails);
 
 }

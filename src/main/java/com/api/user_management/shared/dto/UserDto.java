@@ -15,7 +15,14 @@ public class UserDto implements Serializable{
 	private String firstName;
 	private String lastName;
 	private String middleName;
+	private boolean isPrivacyDisabled;
 
+	public boolean getIsPrivacyDisabled() {
+		return isPrivacyDisabled;
+	}
+	public void setPrivacyDisabled(boolean isPrivacyDisabled) {
+		this.isPrivacyDisabled = isPrivacyDisabled;
+	}
 	@NotBlank(message = "Email is mandatory")
     @Pattern(
         regexp = "^[\\w._%+-]+@[\\w.-]+\\.unicali\\.it$",
@@ -25,6 +32,7 @@ public class UserDto implements Serializable{
 	private String password;
 	private String phoneNumber;
 	private String department;
+	private Long roleId;
 	private String userType;
 	private String userStatus;
 	private String userRole;
@@ -41,7 +49,13 @@ public class UserDto implements Serializable{
 	private Integer departmentId;
 	private long totalUsers;
 	
-    public long getTotalUsers() {
+    public Long getRoleId() {
+		return roleId;
+	}
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
+	}
+	public long getTotalUsers() {
 		return totalUsers;
 	}
 	public void setTotalUsers(long totalUsers) {

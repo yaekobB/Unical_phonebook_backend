@@ -22,11 +22,11 @@ public class ChatRoomEntity extends Audit {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long chatRoomId;
 
-	@Column(nullable = false)
-	private Long recieverId;
+	@Column()
+	private String recipientId;
 
-	@Column(nullable = false)
-	private Long senderId;
+	@Column()
+	private String senderId;
 
 	public Long getChatRoomId() {
 		return chatRoomId;
@@ -36,21 +36,23 @@ public class ChatRoomEntity extends Audit {
 		this.chatRoomId = chatRoomId;
 	}
 
-
-	public Long getRecieverId() {
-		return recieverId;
+	public String getRecipientId() {
+		return recipientId;
 	}
 
-	public void setRecieverId(Long recieverId) {
-		this.recieverId = recieverId;
+	public void setRecipientId(String recipientId) {
+		this.recipientId = recipientId;
 	}
 
-	public Long getSenderId() {
+	public String getSenderId() {
 		return senderId;
 	}
 
-	public void setSenderId(Long senderId) {
+	public void setSenderId(String senderId) {
 		this.senderId = senderId;
 	}
+
+
+
 	
 }

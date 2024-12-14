@@ -1,4 +1,5 @@
 package com.api.user_management.service.Impl;
+
 import java.io.File;
 import java.io.IOException;
 import org.springframework.util.StringUtils;
@@ -46,105 +47,110 @@ import com.api.user_management.shared.dto.PhonebookSuccessfulException;
 import com.api.user_management.ui.model.request.EmailVerificationRequestModel;
 import com.api.user_management.ui.model.request.ResetPasswordRequestModel;
 import com.api.user_management.ui.model.request.SendEmailRequestModel;
+import com.api.user_management.ui.model.request.UserDetailRequestModel;
 import com.api.user_management.ui.model.response.DepartmentResponseModel;
+import com.api.user_management.ui.model.response.UserRest;
 
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.regex.Matcher;
+
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-	
+
 	@Autowired
 	UserRepository userRepository;
-	
+
 	@Autowired
 	GenerateRandomString generateRandomString;
-	
+
 	@Autowired
 	PasswordEncoder bCryptPasswordEncoder;
-	
+
 	@Autowired
-    RoleRepository roleRepository;
-	
-	
+	RoleRepository roleRepository;
+
 	@Autowired
 	EntityManager entityManager;
-	
+
 	@Autowired
 	DepartmentRepository departmentRepository;
-	
+
 	@Value("${file.upload-dir}")
-    private String uploadDirectory;
-	
+	private String uploadDirectory;
+
 	@Value("${app.HostDomain}")
-    private String applicationHostDomain;
+	private String applicationHostDomain;
 //	
 //    private static final String EMAIL_PATTERN = "^[a-zA-Z]+@([a-zA-Z]+\\\\.)?unicali\\.it$";
 //    private static final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 
-    public static boolean isValidEmail(String email) {
-        String emailRegex = "^[a-zA-Z]+@([a-zA-Z]+\\.)?unical\\.it$";
+	public static boolean isValidEmail(String email) {
+		String emailRegex = "^[a-zA-Z]+@([a-zA-Z]+\\.)?unical\\.it$";
 
-        Pattern pattern = Pattern.compile(emailRegex);
-        return pattern.matcher(email).matches();
-    }
-    
-    private static final String PHONE_NUMBER_REGEX = "^\\+?[0-9]{10,15}$";
-    private static final Pattern pattern1 = Pattern.compile(PHONE_NUMBER_REGEX);
+		Pattern pattern = Pattern.compile(emailRegex);
+		return pattern.matcher(email).matches();
+	}
 
-    public boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null) {
-            return false;
-        }
-        Matcher matcher = pattern1.matcher(phoneNumber);
-        return matcher.matches();
-    }
+	private static final String PHONE_NUMBER_REGEX = "^\\+?[0-9]{10,15}$";
+	private static final Pattern pattern1 = Pattern.compile(PHONE_NUMBER_REGEX);
+
+	public boolean isValidPhoneNumber(String phoneNumber) {
+		if (phoneNumber == null) {
+			return false;
+		}
+		Matcher matcher = pattern1.matcher(phoneNumber);
+		return matcher.matches();
+	}
+
 	public UserDto createUser(UserDto user) throws AddressException, MessagingException, IOException {
-		
-		//UserEntity checkEmailEntity = userRepository.findByEmail(user.getEmail());
-		if(userRepository.findByEmail(user.getEmail()) != null) throw new 
-		PhonebookExistsException("Record already exists with this Email.");
-				
+
+		// UserEntity checkEmailEntity = userRepository.findByEmail(user.getEmail());
+		if (userRepository.findByEmail(user.getEmail()) != null)
+			throw new PhonebookExistsException("Record already exists with this Email.");
+
 //		if(!isValidEmail(user.getEmail())) throw new AppException("Email Invalid");
 		UserEntity userEntity = new UserEntity();
 		BeanUtils.copyProperties(user, userEntity);
-						 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.print("==========is publiccccccccccc================"+authentication.getName()+"===========================");
-      
-        if(authentication.getName().equals("anonymousUser")) {
-        	if(user.getUserType().equals("Admin")) throw new PhonebookInternalServerException("Guest can't be registered as an admin");
-        }
-        else {
-        	userEntity.setUserVerified(true);
-        }
-        
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		System.out.print("==========is publiccccccccccc================" + authentication.getName()
+				+ "===========================");
+		RoleEntity userRole = roleRepository.findByIdAndIsDeleted(user.getRoleId(), false);
+//		roleRepository.findByRoleName(user.getUserType());
+
+		if (userRole == null)
+			throw new PhonebookNotFoundException("Role not set.");
+		user.setUserType(userRole.getRoleName());
+		if (authentication.getName().equals("anonymousUser")) {
+			if (user.getUserType().equals("Admin"))
+				throw new PhonebookInternalServerException("Guest can't be registered as an admin");
+		} else {
+			userEntity.setUserVerified(true);
+		}
+
 //        if (!isValidPhoneNumber(user.getPhoneNumber())) {
 //            throw new AppException("Invalid phone number format. It should be between 10 and 15 digits and may start with a '+'");
 //        }
 		String defaultUserStatus = "NotVerified";
 		String emailVerificationToken = generateRandomString.generateUserId(45);
-		
+
 		userEntity.setEmailVerificationToken(emailVerificationToken);
 		userEntity.setUserStatus(defaultUserStatus);
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		userEntity.setUserId(generateRandomString.generateUserId(30));
-		
-		RoleEntity userRole = roleRepository.findByRoleName(user.getUserType());
-		
-		if(userRole == null) 
-			throw new PhonebookNotFoundException("Role not set.");
+
 		Random random = new Random();
 
-        int code = 100000 + random.nextInt(900000); // generates a number between 100000 and 999999
+		int code = 100000 + random.nextInt(900000); // generates a number between 100000 and 999999
 		userEntity.setVerificationCode(code);
 		userEntity.setRoles(Collections.singleton(userRole));
 		UserEntity storedUserDetailsEntity = userRepository.save(userEntity);
-		
+
 		String mailSubject = "Email Verification";
-		String mailBody ="Dear "+ userEntity.getFirstName()+" "+userEntity.getMiddleName()+" "
-		+userEntity.getLastName() +", Use this code to verify your email "+ code;
+		String mailBody = "Dear " + userEntity.getFirstName() + " " + userEntity.getMiddleName() + " "
+				+ userEntity.getLastName() + ", Use this code to verify your email " + code;
 		SendEmailRequestModel sendMail = new SendEmailRequestModel();
 		sendMail.setToAddress(storedUserDetailsEntity.getEmail());
 		sendMail.setSubject(mailSubject);
@@ -155,53 +161,59 @@ public class UserServiceImpl implements UserService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		UserDto returnValue = new UserDto();
 		BeanUtils.copyProperties(storedUserDetailsEntity, returnValue);
-		
+
 		return returnValue;
-		
+
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		UserEntity userEntity = userRepository.findByEmail(email);
-		if(userEntity == null) throw new UsernameNotFoundException(email);
-		
-		return new User(userEntity.getEmail(),userEntity.getEncryptedPassword(), new ArrayList<>());
+		if (userEntity == null)
+			throw new UsernameNotFoundException(email);
+
+		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
 	}
 
 	@Override
 	public UserDto getuser(String email) {
-		
+
 		UserEntity userEntity = userRepository.findByEmail(email);
-		if(userEntity == null) throw new PhonebookNotFoundException("User not found");
-		
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found");
+
 		UserDto returnValue = new UserDto();
 		DepartmentResponseModel departmentResponseModel = new DepartmentResponseModel();
-		DepartmentEntity departmentEntity = departmentRepository.findByDepartmentIdAndIsDeleted(userEntity.getDepartmentId(),false);
-		if(departmentEntity!=null) {
+		DepartmentEntity departmentEntity = departmentRepository
+				.findByDepartmentIdAndIsDeleted(userEntity.getDepartmentId(), false);
+		if (departmentEntity != null) {
 			BeanUtils.copyProperties(departmentEntity, departmentResponseModel);
-			returnValue.setDepartmentResponseModel(departmentResponseModel);	
+			returnValue.setDepartmentResponseModel(departmentResponseModel);
 		}
-		BeanUtils.copyProperties(userEntity, returnValue); 
+		BeanUtils.copyProperties(userEntity, returnValue);
 		return returnValue;
 	}
 
 	@Override
 	public UserDto getUserByUserId(String UserId) {
-			
+
 		UserDto returnValue = new UserDto();
 		UserEntity userEntity = userRepository.findByUserId(UserId);
-		
-		if(userEntity == null) throw new PhonebookNotFoundException("User not found");
-		
-		BeanUtils.copyProperties(userEntity, returnValue); 
+
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found");
+
+		BeanUtils.copyProperties(userEntity, returnValue);
+		returnValue.setPrivacyDisabled(userEntity.getIsPrivacyDisabled());
 		DepartmentResponseModel departmentResponseModel = new DepartmentResponseModel();
-		DepartmentEntity departmentEntity = departmentRepository.findByDepartmentIdAndIsDeleted(userEntity.getDepartmentId(),false);
-		if(departmentEntity!=null) {
+		DepartmentEntity departmentEntity = departmentRepository
+				.findByDepartmentIdAndIsDeleted(userEntity.getDepartmentId(), false);
+		if (departmentEntity != null) {
 			BeanUtils.copyProperties(departmentEntity, departmentResponseModel);
-			returnValue.setDepartmentResponseModel(departmentResponseModel);	
+			returnValue.setDepartmentResponseModel(departmentResponseModel);
 		}
 
 		return returnValue;
@@ -209,13 +221,13 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDto updateUser(String userId, UserDto userDto) {
-		
+
 		UserDto returnValue = new UserDto();
 		UserEntity userEntity = userRepository.findByUserId(userId);
-		
-		if(userEntity == null) 
+
+		if (userEntity == null)
 			throw new PhonebookNotFoundException("User not found.");
-		
+
 		userEntity.setFirstName(userDto.getFirstName());
 		userEntity.setLastName(userDto.getLastName());
 		userEntity.setMiddleName(userDto.getMiddleName());
@@ -224,19 +236,17 @@ public class UserServiceImpl implements UserService {
 		userEntity.setUserType(userDto.getUserType());
 		userEntity.setDepartment(userDto.getDepartment());
 		userEntity.setAddress(userDto.getAddress());
-		
-		
-		//updated user
-//		BeanUtils.copyProperties(userDto, userEntity);
+
+		// updated user
+		BeanUtils.copyProperties(userDto, userEntity);
 //		RoleEntity userRole = roleRepository.findByRoleName("Admin");
 //		if(userRole == null) 
 //			throw new AppException("User RoleEntity not set.");
 //		
 //		userEntity.setRoles(Collections.singleton(userRole));
-		
-				
+
 		UserEntity updatesUserDetailsEntity = userRepository.save(userEntity);
-		
+
 //		RoleEntity roleEntity = roleRepository.findByRoleName(userDto.getUserType());
 //		if(roleEntity!= null) {		
 //			long Id = userEntity.getId();
@@ -247,241 +257,261 @@ public class UserServiceImpl implements UserService {
 //		     .setParameter("roleId", roleId)
 //		     .setParameter("Id", Id)
 //		     .executeUpdate();	
-		
-		
-		BeanUtils.copyProperties(updatesUserDetailsEntity, returnValue); 
+
+		BeanUtils.copyProperties(updatesUserDetailsEntity, returnValue);
 		return returnValue;
 	}
-	
+
 	@Override
 	public UserDto updateUserStatus(String userId, UserDto userDto) {
 		UserDto returnValue = new UserDto();
 		UserEntity userEntity = userRepository.findByUserId(userId);
-		
-		if(userEntity == null) 
+
+		if (userEntity == null)
 			throw new PhonebookNotFoundException("User not found.");
-		
-		userEntity.setUserStatus(userDto.getUserStatus());		
+
+		userEntity.setUserStatus(userDto.getUserStatus());
 		UserEntity updatesUserDetailsEntity = userRepository.save(userEntity);
-		
-		BeanUtils.copyProperties(updatesUserDetailsEntity, returnValue); 
+
+		BeanUtils.copyProperties(updatesUserDetailsEntity, returnValue);
 		return returnValue;
 	}
-	
+
 	@Override
 	public void deleteUser(String userId) {
 		UserEntity userEntity = userRepository.findByUserId(userId);
-		
-		if(userEntity == null) 
+
+		if (userEntity == null)
 			throw new PhonebookNotFoundException("User not found");
-		
+
 		userRepository.delete(userEntity);
 	}
 
 	@Override
-	public List<UserDto> getUsers(int page, int limit, String userType, String searchKey, boolean isPublic, String department, String role) throws IOException{
-		 
-	    List<UserDto> returnValue = new ArrayList<>();
-	    
-	    if(page > 0) page = page - 1; 
-	   
-	    Pageable pageableRequest = PageRequest.of(page, limit, Sort.by("id").descending());
-	    Page<UserEntity> usersPage = null;
-	    
-	    int countSpaces = StringUtils.countOccurrencesOf(searchKey, " ");
-	    long totalUsers = userRepository.countActiveUsers();
-	    
+	public List<UserDto> getUsers(int page, int limit, String userType, String searchKey, boolean isPublic,
+			Integer departmentId, Long roleId) throws IOException {
+
+		List<UserDto> returnValue = new ArrayList<>();
+
+		if (page > 0)
+			page = page - 1;
+
+		Pageable pageableRequest = PageRequest.of(page, limit, Sort.by("id").descending());
+		Page<UserEntity> usersPage = null;
+
+		int countSpaces = StringUtils.countOccurrencesOf(searchKey, " ");
+		long totalUsers = userRepository.countActiveUsers();
+
 //	    long totalUsers =userRepository.countByStatus("Active");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        searchKey = searchKey.trim();
-	    String[] searchKeyArray = searchKey.split(" ");
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		searchKey = searchKey.trim();
+		String[] searchKeyArray = searchKey.split(" ");
 
+		/// chick if it's public or not
+		if (isPublic) {
+			if (searchKey.length() <= 2) {
+				usersPage = userRepository.findByUserStatusAndIsPrivacyDisabled("Active", false, pageableRequest);
+			} else if (countSpaces == 0) {
 
-	    ///chick if it's public or not
-	    if(isPublic) {
-	    	if(searchKey.length()<=2) {
-	    		usersPage = userRepository.findByUserStatus("Active", pageableRequest);
-	    	}
-	    	else if(countSpaces == 0) {
-		    	System.out.print("=====ooooooo=length=1=======rrrrrrrrrrrrrrrrrrrrr===is publicsearchkey==="+searchKey.length()+"=====yyyyyyyy=========");
-
-		    	usersPage = userRepository.searchActiveUsers("Active",searchKey,pageableRequest);
+				usersPage = userRepository.searchActiveUsers("Active", searchKey, pageableRequest);
 //	    	usersPage = userRepository.findByUserStatusAndFirstNameContainingOrUserStatusAndLastNameContainingOrUserStatusAndMiddleNameContainingOrUserStatusAndPhoneNumberContainingOrUserStatusAndEmailContaining("Active", searchKey,"Active",searchKey,"Active",searchKey,"Active",searchKey,"Active",searchKey,pageableRequest);
-	    }
-	    else if(countSpaces == 1){
+			} else if (countSpaces == 1) {
 
-	    	String firstName = searchKeyArray[0];
-	    	String middleName = searchKeyArray[1];
+				String firstName = searchKeyArray[0];
+				String middleName = searchKeyArray[1];
 
-	    	usersPage = userRepository.findByFirstNameContainingAndMiddleNameContainingAndUserStatus(firstName,middleName,"Active",pageableRequest);
-	    }
-	    else if(countSpaces == 2) {
-	    	String firstName = searchKeyArray[0];
-	    	String middleName = searchKeyArray[1];
-	    	String lastName = searchKeyArray[2];
-	    	usersPage = userRepository.findByFirstNameContainingAndMiddleNameContainingAndLastNameContainingAndUserStatus(firstName,middleName,lastName,"Active",pageableRequest);
-	    }
-	    
-	    }
-	    
-	    else {
+				usersPage = userRepository
+						.findByIsPrivacyDisabledAndFirstNameContainingAndMiddleNameContainingAndUserStatus(false,
+								firstName, middleName, "Active", pageableRequest);
+			} else if (countSpaces == 2) {
+				String firstName = searchKeyArray[0];
+				String middleName = searchKeyArray[1];
+				String lastName = searchKeyArray[2];
+				usersPage = userRepository
+						.findByIsPrivacyDisabledAndFirstNameContainingAndMiddleNameContainingAndLastNameContainingAndUserStatus(
+								false, firstName, middleName, lastName, "Active", pageableRequest);
+			}
 
-	    	if(searchKey.length()<=2) {
+		}
 
-	    		usersPage = userRepository.findAll(pageableRequest);
-	    	}
-	    	else
-	    		if(countSpaces == 0) {
-	    	usersPage = userRepository.findByFirstNameContainingOrLastNameContainingOrMiddleNameContainingOrPhoneNumberContainingOrEmailContainingOrUserStatusContaining(searchKey,searchKey,searchKey,searchKey,searchKey,searchKey,pageableRequest);
-	    }
-	    else if(countSpaces == 1){
-	    	String firstName = searchKeyArray[0];
-	    	String middleName = searchKeyArray[1];
-	    	usersPage = userRepository.findByFirstNameContainingAndMiddleNameContaining(firstName,middleName,pageableRequest);
-	    }
-	    else if(countSpaces == 2) {
-	    	String firstName = searchKeyArray[0];
-	    	String middleName = searchKeyArray[1];
-	    	String lastName = searchKeyArray[2];
-	    	usersPage = userRepository.findByFirstNameContainingAndMiddleNameContainingAndLastNameContaining(firstName,middleName,lastName,pageableRequest);
-	    }
-	    
-	    }
+		else {
+
+			if (searchKey.length() <= 2) {
+
+				usersPage = userRepository.findAll(pageableRequest);
+			} else if (countSpaces == 0) {
+				usersPage = userRepository
+						.findByFirstNameContainingOrLastNameContainingOrMiddleNameContainingOrPhoneNumberContainingOrEmailContainingOrUserStatusContaining(
+								searchKey, searchKey, searchKey, searchKey, searchKey, searchKey, pageableRequest);
+			} else if (countSpaces == 1) {
+				String firstName = searchKeyArray[0];
+				String middleName = searchKeyArray[1];
+				usersPage = userRepository.findByFirstNameContainingAndMiddleNameContaining(firstName, middleName,
+						pageableRequest);
+			} else if (countSpaces == 2) {
+				String firstName = searchKeyArray[0];
+				String middleName = searchKeyArray[1];
+				String lastName = searchKeyArray[2];
+				usersPage = userRepository.findByFirstNameContainingAndMiddleNameContainingAndLastNameContaining(
+						firstName, middleName, lastName, pageableRequest);
+			}
+
+		}
 //	    if(userType.equals("All")) {
 //	    	usersPage = userRepository.findAll(pageableRequest);
 //	    }else {
 //	    	usersPage = userRepository.findByUserType(userType,pageableRequest);
 //	    }
-	   
-	    
-	    int totalPages = usersPage.getTotalPages();
-	    List<UserEntity> users = usersPage.getContent();
-	    
-	    if(!department.equals("")) {
-	    users = users.stream()
-                .filter(user -> department.equals(user.getDepartment()))
-                .collect(Collectors.toList());
-	    }
-	    if(!role.equals("")) {
-	    	
-	    users = users.stream()
-                .filter(user -> role.equals(user.getUserType()))
-                .collect(Collectors.toList());
-	    }
-	    for(UserEntity userEntity : users) {
-	    	UserDto userDto = new UserDto(); 
-	    	BeanUtils.copyProperties(userEntity, userDto);
+
+		int totalPages = usersPage.getTotalPages();
+		List<UserEntity> users = usersPage.getContent();
+
+		if (departmentId != 0) {
+			users = users.stream().filter(user -> departmentId == user.getDepartmentId()).collect(Collectors.toList());
+		}
+		if (roleId != 0) {
+
+			users = users.stream().filter(user -> roleId == user.getRoleId()).collect(Collectors.toList());
+		}
+		for (UserEntity userEntity : users) {
+			UserDto userDto = new UserDto();
+
+			BeanUtils.copyProperties(userEntity, userDto);
+
+			userDto.setPrivacyDisabled(userEntity.getIsPrivacyDisabled());
+
 			DepartmentResponseModel departmentResponseModel = new DepartmentResponseModel();
-			DepartmentEntity departmentEntity = departmentRepository.findByDepartmentIdAndIsDeleted(1,
+			DepartmentEntity departmentEntity = departmentRepository.findByDepartmentIdAndIsDeleted(departmentId,
 					false);
 
-			if(departmentEntity!=null) {
+			if (departmentEntity != null) {
 				BeanUtils.copyProperties(departmentEntity, departmentResponseModel);
-				userDto.setDepartmentResponseModel(departmentResponseModel);	
+				userDto.setDepartmentResponseModel(departmentResponseModel);
 			}
 
-	    	if(returnValue.size() == 0) {
-	    		userDto.setTotalUsers(totalUsers);
-	    		userDto.setTotalPages(totalPages);
-	    		
-	    	}
-	    	
-	    	returnValue.add(userDto);
-	    }
-	    
+			if (returnValue.size() == 0) {
+				userDto.setTotalUsers(totalUsers);
+				userDto.setTotalPages(totalPages);
+
+			}
+
+			returnValue.add(userDto);
+		}
+
 		return returnValue;
 	}
 
 	@Override
 	public String checkEmail(String email) {
-		if(userRepository.findByEmail(email) == null) {
-			return "Email doesn't exist";
-		}else {
-			return "Email exists";
+		UserEntity userEntity = userRepository.findByEmail(email);
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found");
+
+		Random random = new Random();
+		int code = 100000 + random.nextInt(900000); // generates a number between 100000 and 999999
+		userEntity = entityManager.merge(userEntity);
+		userEntity.setVerificationCode(code);
+		UserEntity userEntity1 = userRepository.save(userEntity);
+
+		String mailSubject = "Code for Password Reset";
+		String mailBody = "Dear " + userEntity.getFirstName() + " " + userEntity.getMiddleName() + " "
+				+ userEntity.getLastName() + ", Use this code to verify your email " + code;
+		SendEmailRequestModel sendMail = new SendEmailRequestModel();
+		sendMail.setToAddress(email);
+		sendMail.setSubject(mailSubject);
+		sendMail.setBody(mailBody);
+		try {
+			String returnValue1 = sendMailComponent.sendMail(sendMail);
+		} catch (MessagingException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return "Code Successfully Sent";
+
 	}
 
 	@Override
 	public String resetPassword(ResetPasswordRequestModel resetPasswordDetail) {
-		
+
 		String returnValue = "Password not changed";
-		UserEntity userEntity = userRepository.findByEmailAndPasswordResetCode(resetPasswordDetail.getEmail(),resetPasswordDetail.getResetCode());
-		if(userEntity == null) throw new PhonebookInternalServerException("Password Can't be changed");
-		
+		UserEntity userEntity = userRepository.findByEmailAndPasswordResetCode(resetPasswordDetail.getEmail(),
+				resetPasswordDetail.getResetCode());
+		if (userEntity == null)
+			throw new PhonebookInternalServerException("Password Can't be changed");
+
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(resetPasswordDetail.getNewPassword()));
 		UserEntity passworUpdated = userRepository.save(userEntity);
-		if(passworUpdated != null) {
+		if (passworUpdated != null) {
 			returnValue = "Password changed successfully";
 		}
-		throw new PhonebookSuccessfulException("Password changed successfully");
+//		throw new PhonebookSuccessfulException("Password changed successfully");
 
-//		return returnValue;
+		return returnValue;
 	}
 
 	@Override
 	public String changeAccountPassword(ResetPasswordRequestModel changePassRequest) {
-		
+
 		UserEntity userEntity = userRepository.findByEmail(changePassRequest.getEmail());
-		
-		if(userEntity == null) 
+
+		if (userEntity == null)
 			throw new PhonebookNotFoundException("User not found.");
-		
+
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(changePassRequest.getNewPassword()));
 		userRepository.save(userEntity);
-		throw new PhonebookSuccessfulException("Password changed successfully");
+//		throw new PhonebookSuccessfulException("Password changed successfully");
 
-//		return "Password changed successfully";
+		return "Password changed successfully";
 	}
+
 	@Override
 	public String verifyEmail(EmailVerificationRequestModel requestModel) {
 		// TODO Auto-generated method stub
-		String returnValue = new String(); 
-		if(requestModel.getVerificationCode()==null) {
+		String returnValue = new String();
+		if (requestModel.getVerificationCode() == null) {
 			throw new PhonebookNotFoundException("Code Not Sent");
 		}
 		UserEntity userEntity = userRepository.findByEmail(requestModel.getEmail());
-		
-		if(userEntity==null) throw new PhonebookNotFoundException("User not found");
-		
-		if(requestModel.getVerificationCode().equals(userEntity.getVerificationCode())) {
-			userEntity.setUserVerified(true);
 
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found");
+
+		if (requestModel.getVerificationCode().equals(userEntity.getVerificationCode())) {
+			userEntity.setUserVerified(true);
 
 			userEntity.setUserStatus("Active");
 			userRepository.save(userEntity);
-			System.out.print("==============Brhane========="+requestModel.getEmail()+"===========");
-			System.out.print("==============email========="+userEntity.getEmail()+"===========");
 
 			returnValue = "Email Verified Successfully";
-		}
-		else {
+		} else {
 			throw new PhonebookInternalServerException("Email Not Verified");
 
 //			returnValue = "Email Not Verified";
 		}
 		return returnValue;
 	}
-	
+
 	@Autowired
 	SendMail sendMailComponent;
 
-    
 	public String resendCode(EmailVerificationRequestModel requestModel) {
 		// TODO Auto-generated method stub
 		String returnValue = new String();
-		
+
 		UserEntity userEntity = userRepository.findByEmail(requestModel.getEmail());
-		if(userEntity==null) throw new PhonebookNotFoundException("User not found");
-		System.out.print("=======resennddddd======="+requestModel.getEmail().length()+"=====================");
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found");
+		System.out.print("=======resennddddd=======" + requestModel.getEmail().length() + "=====================");
 
 		Random random = new Random();
-        int code = 100000 + random.nextInt(900000); // generates a number between 100000 and 999999
+		int code = 100000 + random.nextInt(900000); // generates a number between 100000 and 999999
 		userEntity.setVerificationCode(code);
 		userEntity.setUserVerified(false);
 		userRepository.save(userEntity);
 
 		String mailSubject = "Email Verification";
-		String mailBody ="Dear "+ userEntity.getFirstName()+" "+userEntity.getMiddleName()+" "+userEntity.getLastName() +", Use this code to verify your email "+ code;
+		String mailBody = "Dear " + userEntity.getFirstName() + " " + userEntity.getMiddleName() + " "
+				+ userEntity.getLastName() + ", Use this code to verify your email " + code;
 		SendEmailRequestModel sendMail = new SendEmailRequestModel();
 		sendMail.setToAddress(requestModel.getEmail());
 		sendMail.setSubject(mailSubject);
@@ -492,14 +522,13 @@ public class UserServiceImpl implements UserService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		throw new PhonebookSuccessfulException("Code Successfully Sent");
-//		return "Code Successfully Sent";
+//		throw new PhonebookSuccessfulException("Code Successfully Sent");
+		return "Code Successfully Sent";
 	}
 
-	
 	@Autowired
 	private JavaMailSender mailSender;
-	
+
 	public void sendMail(String toEmail, String subject, String body) {
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setFrom("bretama99@gmail.com");
@@ -507,9 +536,53 @@ public class UserServiceImpl implements UserService {
 		message.setText(body);
 		message.setSubject(subject);
 		mailSender.send(message);
-		
+
 		System.out.print("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
-		
+
+	}
+
+	@Override
+	public UserDto updateUserPrivacy(String id, UserDto userDto) {
+		// TODO Auto-generated method stub
+		UserDto returnValue = new UserDto();
+		UserEntity userEntity = userRepository.findByUserId(id);
+
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found.");
+
+		userEntity.setPrivacyDisabled(userDto.getIsPrivacyDisabled());
+		UserEntity updatesUserDetailsEntity = userRepository.save(userEntity);
+
+		BeanUtils.copyProperties(updatesUserDetailsEntity, returnValue);
+		returnValue.setPrivacyDisabled(updatesUserDetailsEntity.getIsPrivacyDisabled());
+		return returnValue;
+	}
+
+	@Override
+	public UserRest sendResetCode(EmailVerificationRequestModel requestModel) {
+		// TODO Auto-generated method stub
+		UserRest returnValue = new UserRest();
+		UserEntity userEntity = userRepository.findByEmailAndVerificationCode(requestModel.getEmail(),
+				requestModel.getVerificationCode());
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found.");
+		BeanUtils.copyProperties(userEntity, returnValue);
+		return returnValue;
+	}
+
+	@Override
+	public UserRest forgotPassword(UserDetailRequestModel userDetails) {
+		// TODO Auto-generated method stub
+		UserRest retUserRest = new UserRest();
+		UserEntity userEntity = userRepository.findByEmail(userDetails.getEmail());
+		if (userEntity == null)
+			throw new PhonebookNotFoundException("User not found.");
+		System.out.println("===========" + userDetails.getPassword() + "========" + userDetails.getPassword().length()
+				+ "===" + userDetails.getEmail() + "========");
+		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDetails.getPassword().trim()));
+		UserEntity userEntity2 = userRepository.save(userEntity);
+		BeanUtils.copyProperties(userEntity, retUserRest);
+		return retUserRest;
 	}
 
 }

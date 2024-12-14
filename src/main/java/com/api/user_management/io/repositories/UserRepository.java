@@ -15,7 +15,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 	UserEntity findByEmail(String email); 
 	
 	//Find By User 
-    @Query("SELECT COUNT(u) FROM users u WHERE u.userStatus = 'Active'")
+    @Query("SELECT COUNT(u) FROM users u WHERE u.isPrivacyDisabled=0 AND u.userStatus = 'Active'")
     long countActiveUsers();
 	UserEntity findByUserId(String userId);
 	UserEntity findByEmailAndEncryptedPassword(String email, String encryptedPassword);
@@ -56,8 +56,19 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 			String string, String searchKey, String string2, String searchKey2, String string3, String searchKey3,
 			String string4, String searchKey4, String string5, String searchKey5, Pageable pageableRequest);
 
-    @Query("SELECT u FROM users u WHERE u.userStatus = :status AND " +
+    @Query("SELECT u FROM users u WHERE u.isPrivacyDisabled=0 AND u.userStatus = :status AND " +
             "(u.firstName LIKE %:keyword% OR u.middleName LIKE %:keyword% OR u.lastName LIKE %:keyword% OR " +
             "u.phoneNumber LIKE %:keyword% OR u.email LIKE %:keyword%)")
-     Page<UserEntity> searchActiveUsers(@Param("status") String status, @Param("keyword") String keyword, Pageable pageable);
+     Page<UserEntity> searchActiveUsers(@Param("status") String status, @Param("keyword") String keyword, 
+    		 Pageable pageable);
+
+	Page<UserEntity> findByIsPrivacyDisabledAndFirstNameContainingAndMiddleNameContainingAndUserStatus(boolean b,
+			String firstName, String middleName, String string, Pageable pageableRequest);
+
+	Page<UserEntity> findByIsPrivacyDisabledAndFirstNameContainingAndMiddleNameContainingAndLastNameContainingAndUserStatus(
+			boolean b, String firstName, String middleName, String lastName, String string, Pageable pageableRequest);
+
+	UserEntity findByEmailAndVerificationCode(String email, Integer verificationCode);
+
+	Page<UserEntity> findByUserStatusAndIsPrivacyDisabled(String string, boolean b, Pageable pageableRequest);
 }

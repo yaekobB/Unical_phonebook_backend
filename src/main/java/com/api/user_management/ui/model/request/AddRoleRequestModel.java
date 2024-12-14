@@ -3,6 +3,16 @@ package com.api.user_management.ui.model.request;
 public class AddRoleRequestModel {
 
 	private String roleName;
+	private Long roleId;
+	
+	public Long getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
+	}
+
 	private String roleFullName;
 	private String createdBy;
 

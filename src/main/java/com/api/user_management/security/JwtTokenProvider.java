@@ -78,6 +78,11 @@ public class JwtTokenProvider {
         returnValue.setEmail(userEntity.get().getEmail());
         returnValue.setPhoneNumber(userEntity.get().getPhoneNumber());
         returnValue.setDepartment(userEntity.get().getDepartment());
+        returnValue.setAddress(userEntity.get().getAddress());
+        returnValue.setLinkedIn(userEntity.get().getLinkedIn());
+        returnValue.setTwitter(userEntity.get().getTwitter());
+        returnValue.setWebsiteLink(userEntity.get().getWebsiteLink());
+        returnValue.setPrivacyDisabled(userEntity.get().getIsPrivacyDisabled());       
 //        List<RoleResponseForLogin> roleResponses = new ArrayList<>();
 //        
 //        List<UserRolesEntity> userRolesEntities = userRolesRepository.findByUserId(userPrincipal.getId());

@@ -1,6 +1,7 @@
 package com.api.user_management.service.Impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,17 +13,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.api.user_management.io.entity.ChatMessage;
 import com.api.user_management.io.entity.ChatRoomEntity;
-import com.api.user_management.io.entity.MessageEntity;
-import com.api.user_management.io.entity.MessageEntity;
+import com.api.user_management.io.entity.ChatMessage;
+import com.api.user_management.io.entity.ChatMessage;
 import com.api.user_management.io.entity.UserEntity;
 import com.api.user_management.io.repositories.ChatRoomRepository;
 import com.api.user_management.io.repositories.MessageRepository;
 import com.api.user_management.io.repositories.UserRepository;
 import com.api.user_management.service.MessageService;
 import com.api.user_management.shared.dto.PhonebookNotFoundException;
+import com.api.user_management.ui.model.request.DepartmentRequestModel;
 import com.api.user_management.ui.model.request.MessageRequestModel;
-import com.api.user_management.ui.model.response.MessageResponseModel;
+import com.api.user_management.ui.model.response.DepartmentResponseModel;
 import com.api.user_management.ui.model.response.MessageResponseModel;
 
 @Service
@@ -39,72 +42,81 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public MessageResponseModel addMessage(MessageRequestModel messagesDetail) {
-		MessageResponseModel returnValue = new MessageResponseModel();
-		MessageEntity messageEntity = new MessageEntity();
+    	MessageResponseModel returnValue = new MessageResponseModel();
+		ChatMessage messageEntity = new ChatMessage();
 		BeanUtils.copyProperties(messagesDetail, messageEntity);
-		MessageEntity savedMessageEntity = messageRepository.save(messageEntity);
-		BeanUtils.copyProperties(savedMessageEntity, returnValue);
+		ChatMessage savedChatMessage = messageRepository.save(messageEntity);
+		BeanUtils.copyProperties(savedChatMessage, returnValue);
 		return returnValue;
 	}
 
 	@Override
-	public MessageResponseModel updateMessage(Long messageId, MessageRequestModel messageDetails) {
-		MessageResponseModel returnValue = new MessageResponseModel();
-		MessageEntity messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
+	public ChatMessage updateMessage(Long messageId, ChatMessage messageDetails) {
+		ChatMessage returnValue = new ChatMessage();
+		ChatMessage messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
 		if (messageEntity == null)
 			new PhonebookNotFoundException("Message Not Found");
 		BeanUtils.copyProperties(messageDetails, messageEntity);
-		MessageEntity savedMessageEntity = messageRepository.save(messageEntity);
-		BeanUtils.copyProperties(savedMessageEntity, returnValue);
+		ChatMessage savedChatMessage = messageRepository.save(messageEntity);
+		BeanUtils.copyProperties(savedChatMessage, returnValue);
 		return returnValue;
 	}
 
 	@Override
-	public List<MessageResponseModel> getMessages(String searchKey, int page, int limit, Long senderId,
-			Long recieverId) {
+	public List<MessageResponseModel> getMessages(String searchKey, int page, int limit, String senderId,
+			String recieverId) {
 		List<MessageResponseModel> returnValue = new ArrayList<>();
-
+//System
 		if (page > 0)
 			page = page - 1;
 
 		Pageable pageableRequest = PageRequest.of(page, limit, Sort.by("messageId").ascending());
-		Page<MessageEntity> messagePage = null;
+		Page<ChatMessage> messagePage = null;
 
-		ChatRoomEntity chatRoomEntity = chatRoomRepository.findBySenderIdAndRecieverIdOrRecieverIdAndSenderId(senderId,
+		ChatRoomEntity chatRoomEntity = chatRoomRepository.findBySenderIdAndRecipientIdOrRecipientIdAndSenderId(senderId,
 				recieverId, senderId, recieverId);
+//		System.out.print("==========brhane teamrat========="+chatRoomEntity.getRecipientId()+"=======================");
+		
 		if (chatRoomEntity == null) {
-			MessageRequestModel messageRequestModel = new MessageRequestModel();
+			ChatMessage messageRequestModel = new ChatMessage();
 			messageRequestModel.setSenderId(senderId);
-			messageRequestModel.setRecieverId(recieverId);
-			this.saveChatRoomMessages(messageRequestModel);
-			return null;
+			messageRequestModel.setRecipientId(recieverId);
+			MessageResponseModel chatMessage=	this.saveChatRoomMessages(messageRequestModel);
+			returnValue.add(chatMessage);
+		   return returnValue;
 		}
 
 		else {
+		
 			if ("".equals(searchKey))
-				messagePage = messageRepository.findByIsDeletedAndSenderIdOrRecieverId(false, senderId, recieverId,
+				messagePage = messageRepository.
+				findByIsDeletedAndSenderIdAndRecipientIdOrRecipientIdAndSenderId(false, 
+						senderId, recieverId,senderId, recieverId,
 						pageableRequest);// .findAll(pageableRequest);
 			else
-				messagePage = messageRepository.findByIsDeletedAndContentContainingAndSenderIdAndRecieverIdOrRecieverIdAndSenderId(
-						false, searchKey, senderId, recieverId,recieverId,senderId, pageableRequest);// .findAll(pageableRequest);
-			List<MessageEntity> messageEntities = messagePage.getContent();
+				messagePage = messageRepository.findByIsDeletedAndContentContainingAndSenderIdAndRecipientIdOrRecipientIdAndSenderId(
+						false, searchKey, senderId, recieverId,senderId,recieverId, pageableRequest);// .findAll(pageableRequest);
+			List<ChatMessage> messageEntities = messagePage.getContent();
 
 			int totalPages = messagePage.getTotalPages();
-			for (MessageEntity messageEntity : messageEntities) {
+			for (ChatMessage messageEntity : messageEntities) {
 
 				MessageResponseModel messageResponseModel = new MessageResponseModel();
 				BeanUtils.copyProperties(messageEntity, messageResponseModel);
 
-				Optional<UserEntity> userEntity = userRepository.findById(senderId);
-				if (userEntity.get().getId() == messageEntity.getRecieverId()) {
+				UserEntity userEntity = userRepository.findByUserId(senderId);
+				if (userEntity.getUserId().equals(messageEntity.getRecipientId())) {
 					messageResponseModel.setSender(false);
 				} else {
 					messageResponseModel.setSender(true);
+					userEntity = userRepository.findByUserId(recieverId);
+
 				}
 				
 //				messageResponseModel.setContent(messageEntity.getContent());
-				messageResponseModel.setCreatedBy(userEntity.get().getFirstName() + " " + userEntity.get().getMiddleName()
-						+ " " + userEntity.get().getLastName());
+				messageResponseModel.setCreatedBy(userEntity.getFirstName() + " " + userEntity.getMiddleName()
+						+ " " + userEntity.getLastName());
+				messageResponseModel.setCreaterId(userEntity.getUserId());
 
 //			if (returnValue.size() == 0) {
 //				messageResponseModel.setTotalPage(totalPages);
@@ -117,13 +129,10 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public MessageResponseModel getMessage(Long messageId) {
-
+	public ChatMessage getMessage(Long messageId) {
 		
-		
-		
-		MessageResponseModel returnValue = new MessageResponseModel();
-		MessageEntity messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
+		ChatMessage returnValue = new ChatMessage();
+		ChatMessage messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
 		if (messageEntity == null)
 			throw new PhonebookNotFoundException("Message not found");
 		BeanUtils.copyProperties(messageEntity, returnValue);
@@ -132,7 +141,7 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public String deleteMessage(Long messageId) {
-		MessageEntity messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
+		ChatMessage messageEntity = messageRepository.findByMessageIdAndIsDeleted(messageId, false);
 		if (messageEntity == null)
 			throw new PhonebookNotFoundException("Message not found");
 		messageEntity.setDeleted(true);
@@ -141,38 +150,76 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public List<MessageResponseModel> getChatRoomMessages(String searchKey, int page, int limit, Long userId) {
+	public List<MessageResponseModel> getChatRoomMessages(String searchKey, int page, int limit, 
+			String userId) {
 
 		List<MessageResponseModel> returnValue = new ArrayList<MessageResponseModel>();
-		List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.findBySenderIdOrRecieverId(userId, userId);
+		List<ChatRoomEntity> chatRoomEntities = chatRoomRepository.
+				findBySenderIdOrRecipientId(userId.trim(), userId.trim());
+
 		for (ChatRoomEntity chatRoomEntity : chatRoomEntities) {
 			MessageResponseModel messageResponseModel = new MessageResponseModel();
 			BeanUtils.copyProperties(chatRoomEntity, messageResponseModel);
-			Optional<UserEntity> userEntity = userRepository.findById(userId);
-			if (userEntity.get().getId() == chatRoomEntity.getRecieverId()) {
+			UserEntity userEntity = userRepository.findByUserId(userId);
+			
+			if (chatRoomEntity!=null&& userEntity!=null&& userEntity.getUserId().equals(chatRoomEntity.getRecipientId())) {
 				messageResponseModel.setSender(false);
 			} else {
 				messageResponseModel.setSender(true);
 			}
 
-			MessageEntity messageEntity = messageRepository.findTopBySenderIdOrRecieverIdOrderByTimestampDesc(userId,
-					userId);
-			messageResponseModel.setContent(messageEntity.getContent());
-			messageResponseModel.setCreatedBy(userEntity.get().getFirstName() + " " + userEntity.get().getMiddleName()
-					+ " " + userEntity.get().getLastName());
+			ChatMessage chatMessages12 = messageRepository.findTopByIsDeletedAndSenderIdAndRecipientIdOrSenderIdAndRecipientId(false,
+					chatRoomEntity.getRecipientId(), chatRoomEntity.getSenderId(),chatRoomEntity.getRecipientId()
+					,chatRoomEntity.getSenderId() );
+			
+			UserEntity userEntity2=null;
+			
+			if(chatMessages12!=null) {
+				messageResponseModel.setContent(chatMessages12.getContent());
+				messageResponseModel.setCreatedAt(chatMessages12.getCreatedAt());
+
+			
+			}
+			if(chatRoomEntity.getSenderId().equals(userId)) {
+
+				userEntity2=userRepository.findByUserId(chatRoomEntity.getRecipientId());
+				messageResponseModel.setCreatedBy(userEntity2.getFirstName() + " " + userEntity2.getMiddleName()
+				+ " " + userEntity2.getLastName());
+				messageResponseModel.setCreaterId(userEntity2.getUserId());
+			}
+			else if(!chatRoomEntity.getSenderId().equals(userId)) {
+				userEntity2=userRepository.findByUserId(chatRoomEntity.getSenderId());
+				messageResponseModel.setCreatedBy(userEntity2.getFirstName() + " " + userEntity2.getMiddleName()
+				+ " " + userEntity2.getLastName());
+				messageResponseModel.setCreaterId(userEntity2.getUserId());
+
+			}
+			
+           if(!chatRoomEntity.getSenderId().equals(chatRoomEntity.getRecipientId()))
 			returnValue.add(messageResponseModel);
 		}
+		Collections.sort(returnValue, (a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+//		returnValue.sort(Comparator.comparing(entity -> entity).reversed());
+
 		return returnValue;
 	}
 
 	@Override
-	public MessageResponseModel saveChatRoomMessages(MessageRequestModel messagesDetail) {
+	public MessageResponseModel saveChatRoomMessages(ChatMessage messagesDetail) {
 		MessageResponseModel returnValue = new MessageResponseModel();
 		ChatRoomEntity chatRoomEntity = new ChatRoomEntity();
 		BeanUtils.copyProperties(messagesDetail, chatRoomEntity);
 		ChatRoomEntity chatRoomEntity2 = chatRoomRepository.save(chatRoomEntity);
 		BeanUtils.copyProperties(chatRoomEntity2, returnValue);
 		return returnValue;
+	}
+
+
+
+	@Override
+	public DepartmentResponseModel addDepartment(DepartmentRequestModel departmentsDetail) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

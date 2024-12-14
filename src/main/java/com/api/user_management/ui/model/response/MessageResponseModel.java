@@ -4,9 +4,52 @@ import com.api.model.audit.Audit;
 
 public class MessageResponseModel extends Audit {
 
-	private Long senderId;
-	private Long recieverId;
+	private Long chatRoomId;
+	private String senderId;
+	private String recipientId;
+	private String createrId;
 	private String content;
+	
+
+	public String getCreaterId() {
+		return createrId;
+	}
+
+	public void setCreaterId(String createrId) {
+		this.createrId = createrId;
+	}
+
+	public Long getChatRoomId() {
+		return chatRoomId;
+	}
+
+	public void setChatRoomId(Long chatRoomId) {
+		this.chatRoomId = chatRoomId;
+	}
+
+	public String getSenderId() {
+		return senderId;
+	}
+
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
+	}
+
+	public String getRecipientId() {
+		return recipientId;
+	}
+
+	public void setRecipientId(String recipientId) {
+		this.recipientId = recipientId;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
 	private boolean isSender;
 	
 	public boolean isSender() {
@@ -15,25 +58,6 @@ public class MessageResponseModel extends Audit {
 	public void setSender(boolean isSender) {
 		this.isSender = isSender;
 	}
-	public Long getSenderId() {
-		return senderId;
-	}
-	public void setSenderId(Long senderId) {
-		this.senderId = senderId;
-	}
-	public Long getRecieverId() {
-		return recieverId;
-	}
-	public void setRecieverId(Long recieverId) {
-		this.recieverId = recieverId;
-	}
-	public String getContent() {
-		return content;
-	}
-	public void setContent(String content) {
-		this.content = content;
-	}
-	
-	
+
 	
 }

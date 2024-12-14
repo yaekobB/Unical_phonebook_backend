@@ -44,13 +44,28 @@ public class UserControllers {
 	public UserRest getUser(@PathVariable String id) {
 		UserRest returnValue= new UserRest();
 		UserDto userDto = userService.getUserByUserId(id);
+		returnValue.setPrivacyDisabled(userDto.getIsPrivacyDisabled());
 		BeanUtils.copyProperties(userDto, returnValue);
 		return returnValue;
 	}
 
-	@GetMapping(path="/checkemail/{email}")
+	@PutMapping(path="/checkemail/{email}")
 	public String checkEmail(@PathVariable String email) {
 		String returnValue = userService.checkEmail(email);
+		return returnValue;
+		
+	}
+	
+	@PutMapping(path="/send-reset-code")
+	public UserRest sendResetCode(@RequestBody EmailVerificationRequestModel requestModel) {
+		UserRest returnValue = userService.sendResetCode(requestModel);
+		return returnValue;
+		
+	}
+	
+	@PutMapping(path="/forgot-password")
+	public UserRest forgotPassword(@RequestBody UserDetailRequestModel userDetails) {
+		UserRest returnValue = userService.forgotPassword(userDetails);
 		return returnValue;
 		
 	}
@@ -64,15 +79,15 @@ public class UserControllers {
 			@RequestParam(value="limit", defaultValue = "25") int limit,
 			@RequestParam(value="searchKey", defaultValue = "") String searchKey,
 			@RequestParam(value="isPublic", defaultValue = "false") boolean isPublic,
-			@RequestParam(value="department", defaultValue = "") String department,
-			@RequestParam(value="role", defaultValue = "") String role
+			@RequestParam(value="departmentId", defaultValue = "0") Integer departmentId,
+			@RequestParam(value="roleId", defaultValue = "0") Long roleId
 			) 
 					throws AddressException, IOException{
 		
 //		authObject.authorization();
 		List<UserRest> returnValue = new ArrayList<>();
 		
-		List<UserDto> users= userService.getUsers(page,limit,userType, searchKey,isPublic, department, role);
+		List<UserDto> users= userService.getUsers(page,limit,userType, searchKey,isPublic, departmentId, roleId);
 		
 		for(UserDto userDto : users) {
 			UserRest userModel = new UserRest();
@@ -124,6 +139,7 @@ public class UserControllers {
 
 		UserDto changePrivacy = userService.updateUserPrivacy(id, userDto);
 		BeanUtils.copyProperties(changePrivacy, returnValue);
+		returnValue.setPrivacyDisabled(changePrivacy.getIsPrivacyDisabled());
 		 
 		return returnValue;
 	}

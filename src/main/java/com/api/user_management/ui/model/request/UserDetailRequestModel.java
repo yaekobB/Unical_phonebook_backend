@@ -13,12 +13,26 @@ public class UserDetailRequestModel {
 	private String userRole;
 	private String websiteLink;
 	private Integer departmentId;
+	private Long roleId;
 	private String department;
 	private String address;
 	private String linkedIn;
 	private String twitter;
 	private String departmentWebsite;
+	private boolean isPrivacyDisabled;
 
+	public Long getRoleId() {
+		return roleId;
+	}
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
+	}
+	public boolean getIsPrivacyDisabled() {
+		return isPrivacyDisabled;
+	}
+	public void setPrivacyDisabled(boolean isPrivacyDisabled) {
+		this.isPrivacyDisabled = isPrivacyDisabled;
+	}
 	public String getAddress() {
 		return address;
 	}

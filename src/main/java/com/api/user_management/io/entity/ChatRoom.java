@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import com.api.model.audit.Audit;
 
 @Entity
-@Table(name = "chat_room")
+@Table(name = "chat_roomsss")
 public class ChatRoom extends Audit{
 
 	

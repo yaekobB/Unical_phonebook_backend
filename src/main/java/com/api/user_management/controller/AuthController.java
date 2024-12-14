@@ -1,6 +1,4 @@
 package com.api.user_management.controller;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

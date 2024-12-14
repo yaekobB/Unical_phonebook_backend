@@ -13,6 +13,6 @@ import com.api.user_management.io.entity.ChatRoom;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, String> {
 
-    List<ChatMessage> findByChatId(String chatId);
+//    List<ChatMessage> findByChatRoomId(String chatId);
 
 }

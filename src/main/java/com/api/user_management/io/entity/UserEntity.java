@@ -39,6 +39,16 @@ public class UserEntity extends Audit implements Serializable  {
 	
 	@Column
 	private MessageStatus status;
+	
+	@Column
+	private boolean isPrivacyDisabled=false;
+
+	public boolean getIsPrivacyDisabled() {
+		return isPrivacyDisabled;
+	}
+	public void setPrivacyDisabled(boolean isPrivacyDisabled) {
+		this.isPrivacyDisabled = isPrivacyDisabled;
+	}
 
 	@Column(nullable = false,length=50)
 	private String lastName;
@@ -76,8 +86,18 @@ public class UserEntity extends Audit implements Serializable  {
 	private String passwordResetCode;
 	
 	@Column(nullable = false)
-	private String userType;
+	private String userType;	
 	
+	@Column
+	private Long roleId;
+	
+	public Long getRoleId() {
+		return roleId;
+	}
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
+	}
+
 	@Column(nullable = false)
 	private String userStatus;
 	

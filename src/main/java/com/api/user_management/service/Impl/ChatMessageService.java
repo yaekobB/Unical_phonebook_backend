@@ -20,13 +20,14 @@ public class ChatMessageService {
         Optional<String> chatId = chatRoomService
                 .getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
                 ; // You can create your own dedicated exception
-        chatMessage.setChatId(chatId.get());
+//        chatMessage.setChatRoomId(chatId.get());
         repository.save(chatMessage);
         return chatMessage;
     }
 
     public List<ChatMessage> findChatMessages(String senderId, String recipientId) {
         Optional<String> chatId = chatRoomService.getChatRoomId(senderId, recipientId, false);
-        return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
+//        return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
+        return null;
     }
 }

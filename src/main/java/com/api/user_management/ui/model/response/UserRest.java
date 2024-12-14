@@ -18,7 +18,14 @@ public class UserRest {
 	private String twitter;
 	private String departmentWebsite;
 	private long totalUsers;
-	
+	private boolean isPrivacyDisabled;
+
+	public boolean getIsPrivacyDisabled() {
+		return isPrivacyDisabled;
+	}
+	public void setPrivacyDisabled(boolean isPrivacyDisabled) {
+		this.isPrivacyDisabled = isPrivacyDisabled;
+	}
     public long getTotalUsers() {
 		return totalUsers;
 	}

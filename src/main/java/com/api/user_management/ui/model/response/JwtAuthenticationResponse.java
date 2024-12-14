@@ -1,7 +1,5 @@
 package com.api.user_management.ui.model.response;
-
 import java.util.List;
-
 
 public class JwtAuthenticationResponse {
     
@@ -15,8 +13,50 @@ public class JwtAuthenticationResponse {
     private String email;
     private String phoneNumber;
     private String department;
-    
-    public String getDepartment() {
+	private String websiteLink;
+	private String address;
+	private String linkedIn;
+	private String twitter;
+	private String departmentWebsite;
+	private boolean isPrivacyDisabled;
+	
+	public boolean getIsPrivacyDisabled() {
+		return isPrivacyDisabled;
+	}
+	public void setPrivacyDisabled(boolean isPrivacyDisabled) {
+		this.isPrivacyDisabled = isPrivacyDisabled;
+	}
+    public String getWebsiteLink() {
+		return websiteLink;
+	}
+	public void setWebsiteLink(String websiteLink) {
+		this.websiteLink = websiteLink;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public String getLinkedIn() {
+		return linkedIn;
+	}
+	public void setLinkedIn(String linkedIn) {
+		this.linkedIn = linkedIn;
+	}
+	public String getTwitter() {
+		return twitter;
+	}
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
+	}
+	public String getDepartmentWebsite() {
+		return departmentWebsite;
+	}
+	public void setDepartmentWebsite(String departmentWebsite) {
+		this.departmentWebsite = departmentWebsite;
+	}
+	public String getDepartment() {
 		return department;
 	}
 	public void setDepartment(String department) {

@@ -1,9 +1,12 @@
 package com.api.user_management.io.entity;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -13,11 +16,14 @@ import com.api.model.audit.Audit;
 @Table(name = "chat_message")
 public class ChatMessage extends Audit{
 	
+	private static final long serialVersionUID = -7144799871762972545L;
+
 	@Id
-	private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long messageId;
 
 	@Column()
-    private String chatId;
+    private Long chatRoomId;
 	
 	@Column()
     private String senderId;
@@ -29,22 +35,23 @@ public class ChatMessage extends Audit{
     private String content;
 	
 	@Column()
-    private Date timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
 
-	public String getId() {
-		return id;
+
+	public Long getMessageId() {
+		return messageId;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setMessageId(Long messageId) {
+		this.messageId = messageId;
 	}
 
-	public String getChatId() {
-		return chatId;
+	public Long getChatRoomId() {
+		return chatRoomId;
 	}
 
-	public void setChatId(String chatId) {
-		this.chatId = chatId;
+	public void setChatRoomId(Long chatRoomId) {
+		this.chatRoomId = chatRoomId;
 	}
 
 	public String getSenderId() {
@@ -71,13 +78,14 @@ public class ChatMessage extends Audit{
 		this.content = content;
 	}
 
-	public Date getTimestamp() {
+	public LocalDateTime getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Date timestamp) {
+	public void setTimestamp(LocalDateTime timestamp) {
 		this.timestamp = timestamp;
 	}
+
 
 	
 }

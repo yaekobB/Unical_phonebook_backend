@@ -1,47 +1,85 @@
 package com.api.user_management.controller;
-
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.api.user_management.io.entity.ChatMessage;
-import com.api.user_management.io.entity.ChatRoom;
-import com.api.user_management.service.Impl.ChatMessageService;
+import com.api.user_management.service.MessageService;
 import com.api.user_management.shared.ChatNotification;
+import com.api.user_management.shared.dto.TextMessageDTO;
+import com.api.user_management.ui.model.request.MessageRequestModel;
+import com.api.user_management.ui.model.response.MessageResponseModel;
 
-import java.util.List;
+@CrossOrigin(origins = "http://localhost:8080")
+@RestController
+@RequestMapping("/chats")
 
-@Controller
-@RequiredArgsConstructor
 public class ChatController {
 
-    private SimpMessagingTemplate messagingTemplate;
-    private ChatMessageService chatMessageService;
+	@Autowired
+   SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired
+    MessageService messagesService;
 
-    @MessageMapping("/chat")
-    public void processMessage(@Payload ChatMessage chatMessage) {
-        ChatMessage savedMsg = chatMessageService.save(chatMessage);
-        messagingTemplate.convertAndSendToUser(
-                chatMessage.getRecipientId(), "/queue/messages",
-                new ChatNotification(
-                        savedMsg.getId(),
-                        savedMsg.getSenderId(),
-                        savedMsg.getRecipientId(),
-                        savedMsg.getContent()
-                )
-        );
-    }
+	@PostMapping("/send")
+	public ResponseEntity<Void> sendMessage(@RequestBody MessageRequestModel chatMessage) {
+		MessageResponseModel savedMsg = messagesService.addMessage(chatMessage);
+		TextMessageDTO textMessageDTO = new TextMessageDTO();
+		textMessageDTO.setMessage(savedMsg.getContent());
+		messagingTemplate.convertAndSend("/topic/greetings", savedMsg);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+//	@PostMapping
+//	public void addMessage(@RequestBody MessageRequestModel chatMessage) {
+//		MessageResponseModel savedMsg = messagesService.addMessage(chatMessage);
+//		System.out.print("=====saved====="+savedMsg.getContent()+"==========");
+//		MessageResponseModel retMessageResponseModel = new MessageResponseModel();
+//		retMessageResponseModel.setContent("savedMsg");
+//      messagingTemplate.convertAndSend("topic/greetings",retMessageResponseModel
+//      new ChatNotification(
+//              savedMsg.getChatRoomId(),
+//              savedMsg.getSenderId(),
+//              savedMsg.getRecipientId(),
+//              savedMsg.getContent()
+//      )
+//);
+//		DepartmentResponseModel returnValue = messagesService.addDepartment(departmentsDetail);
+		
+//		return null;
+		
+//	}
+//    @PostMapping
+//    public void processMessage(@RequestBody MessageRequestModel chatMessage) {
+//		System.out.print("========getContent====="+chatMessage.getContent()+"===========");
+//
+//    	ChatMessage savedMsg = messagesService.addMessageWWWW(chatMessage);
+//
+//        messagingTemplate.convertAndSend("topic/greetings",
+//                new ChatNotification(
+//                        savedMsg.getChatRoomId(),
+//                        savedMsg.getSenderId(),
+//                        savedMsg.getRecipientId(),
+//                        savedMsg.getContent()
+//                )
+//        );
+//    }
 
-    @GetMapping("/messages/{senderId}/{recipientId}")
-    public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,
-                                                 @PathVariable String recipientId) {
-        return ResponseEntity
-                .ok(chatMessageService.findChatMessages(senderId, recipientId));
-   
-    }
+	@SendTo("/topic/greetings")
+	public MessageResponseModel broadcastMessage(
+			@Payload MessageResponseModel orderResponseModel) {
+		return orderResponseModel;
+	}
+
+//	@SendTo("/topic/greetings")
+//	public String eeee(@Payload String orderResponseModel) {
+//		return orderResponseModel;
+//	}
 }

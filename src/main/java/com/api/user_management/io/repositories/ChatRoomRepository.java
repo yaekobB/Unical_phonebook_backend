@@ -10,10 +10,12 @@ import com.api.user_management.io.entity.ChatRoomEntity;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long>{
 
-	List<ChatRoomEntity> findBySenderIdOrRecieverId(Long userId, Long userId2);
+	ChatRoomEntity findBySenderIdAndRecipientIdOrRecipientIdAndSenderId(String senderId, String recieverId,
+			String senderId2, String recieverId2);
 
-	ChatRoomEntity findBySenderIdAndRecieverIdOrRecieverIdAndSenderId(Long senderId, Long recieverId, Long senderId2,
-			Long recieverId2);
+	List<ChatRoomEntity> findBySenderIdOrRecipientId(String userId, String userId2);
+
+
 
 
 }
